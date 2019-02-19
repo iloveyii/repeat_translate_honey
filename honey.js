@@ -138,11 +138,14 @@ function run(A, B, N, X) {
     let find = 0;
     let min = reallyBig;
 
-
     // We try 10 times to get the shorted possible path
-    while (find < 5) {
+    while (find < 25) {
         countN = 0;
+        if(DEBUG) {
+            console.log('Iteration : ' + find + ', Visited :' + visited);
+        }
         const result = reachHoney(A, B, N, X);
+        if(DEBUG) console.log('Nodes traversed: ' + result);
         if (result > 0 && min > result) {
             min = result;
         }
@@ -158,7 +161,7 @@ function run(A, B, N, X) {
 
 
 /** TEST DRIVE **/
-const DEBUG = 0;
+const DEBUG = 1;
 
 let countN = 0;
 let visited = [];
@@ -166,9 +169,9 @@ let table = new Array();
 
 let R, N, A, B, X;
 R = 6;
-N = 6;
-A = 1;
-B = 45;
+N = 653;
+A = 44;
+B = 28;
 X = [15, 16, 17, 19, 26, 27, 52, 53, 58, 65, 74];
 
 console.log(run(A, B, N, X));
