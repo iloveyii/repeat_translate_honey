@@ -95,7 +95,7 @@ function findNeighbors(el) {
     return filteredNeighbours;
 }
 
-function findClosest(counts, goal) {
+function findClosest2(counts, goal) {
     if (!Array.isArray(counts) || counts.length < 1) return null;
     const closest = counts.reduce(function (prev, curr) {
         return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
@@ -104,11 +104,49 @@ function findClosest(counts, goal) {
     return closest;
 }
 
+function findClosest(current, neighbours, target) {
+    let colRow = findRowOfElement(target);
+    const targetCol = colRow[0];
+    const targetRow = colRow[1];
+    if(DEBUG) console.log(colRow);
+
+    let nearest = neighbours[0];
+    let shortestDistance = 999999999;
+
+    for(let i = 0; i < neighbours.length; i++) {
+        let colRow = findRowOfElement(neighbours[i]);
+        let neighbourCol = colRow[0];
+        let neighbourRow = colRow[1];
+        let colDistance = Math.abs(targetCol - neighbourCol);
+        let rowDistance = Math.abs(targetRow - neighbourRow);
+        let totalDistance = colDistance + rowDistance;
+        if(totalDistance < shortestDistance) {
+            shortestDistance = totalDistance;
+            nearest = neighbours[i];
+        } else if(totalDistance == shortestDistance) {
+            if(potential.indexOf(neighbours[i]) !== -1) {
+                nearest = neighbours[i];
+            } else {
+                potential.push(current);
+                potential.push(neighbours[i]);
+                potential = [...(new Set([potential]))];
+            }
+        }
+
+    }
+
+    return nearest;
+}
+
 function reachHoney(start, target, N, hardened) {
     // algorithm
     // find neighbours of start
     let neighbours = findNeighbors(start);
     if (DEBUG) console.log(neighbours);
+    for (let i = 0; i < potential.length; i++) {
+        const pot = potential[i];
+        visited = visited.filter(item => item != pot);
+    }
     // find closer to target, but avoid hardened
     // remove hardened from neighbours as well as visited
     const hardenedAndVisited = hardened.concat(visited);
@@ -116,7 +154,10 @@ function reachHoney(start, target, N, hardened) {
         const hard = hardenedAndVisited[i];
         neighbours = neighbours.filter(item => item != hard);
     }
-    const closest = findClosest(neighbours, target);
+    const closest = findClosest(start, neighbours, target);
+    if(closest == 47) {
+        console.log('on the mark');
+    }
     if (DEBUG) console.log('Closest to target ' + target + ' is : ' + closest);
     countN++;
 
@@ -139,13 +180,16 @@ function run(A, B, N, X) {
     let min = reallyBig;
 
     // We try 10 times to get the shorted possible path
-    while (find < 25) {
+    while (find < 1) {
         countN = 0;
         if(DEBUG) {
             console.log('Iteration : ' + find + ', Visited :' + visited);
         }
         const result = reachHoney(A, B, N, X);
-        if(DEBUG) console.log('Nodes traversed: ' + result);
+        if(DEBUG) {
+            console.log('Nodes traversed: ' + result);
+            console.log('Potential: ' + potential);
+        }
         if (result > 0 && min > result) {
             min = result;
         }
@@ -165,6 +209,7 @@ const DEBUG = 1;
 
 let countN = 0;
 let visited = [];
+let potential = [];
 let table = new Array();
 
 let R, N, A, B, X;
